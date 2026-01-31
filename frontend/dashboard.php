@@ -1,49 +1,12 @@
-<?php
-session_start();
-require_once dirname(__DIR__, 3) . '/config/db.php';
-require_once dirname(__DIR__, 3) . '/library/mysql.php';
-
-function verifySession() {
-    if (!isset($_SESSION['auth']) || !is_array($_SESSION['auth'])) {
-        return false;
-    }
-
-    $expectedToken = hash('sha256', 
-        $_SESSION['auth']['username'] . 
-        $_SERVER['HTTP_USER_AGENT']
-    );
-
-    if (!hash_equals($_SESSION['auth']['token'], $expectedToken)) {
-        return false;
-    }
-
-    // 可选：检查用户是否仍然存在
-    $db = new MySQLiPDO([
-        'host' => DB_HOST,
-        'port' => DB_PORT,
-        'dbname' => DB_NAME,
-        'username' => DB_USER,
-        'password' => DB_PASS
-    ]);
-
-    $userExists = $db->count('user', ['name' => $_SESSION['auth']['username']]);
-    return $userExists > 0;
-}
-
-if (!verifySession()) {
-    session_unset();
-    session_destroy();
-    header('Location: /login');
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
+    <?php require_once ($_SERVER['DOCUMENT_ROOT'] . "/sql/db.php");
+        require ($_SERVER['DOCUMENT_ROOT'] . "/backend/library/php/mysql.php");
+        $sql = new MySQLiPDO($pdo); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VPN 仪表盘</title>
+    <title>V</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -51,7 +14,7 @@ if (!verifySession()) {
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f8fafc;
@@ -60,7 +23,6 @@ if (!verifySession()) {
             display: flex;
         }
 
-        /* 主内容区样式 */
         .dashboard {
             flex: 1;
             display: flex;
@@ -169,8 +131,7 @@ if (!verifySession()) {
             gap: 20px;
         }
 
-        .left-column,
-        .right-column {
+        .left-column, .right-column {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -307,7 +268,7 @@ if (!verifySession()) {
         .footer {
             padding: 0 25px 25px;
         }
-
+        
         .copyright-card {
             background-color: #ffffff;
             padding: 20px;
@@ -318,39 +279,77 @@ if (!verifySession()) {
             color: #6c757d;
             font-size: 14px;
         }
-
+        
         .copyright-card a {
             color: #007bff;
             text-decoration: none;
             transition: all 0.3s ease;
         }
-
+        
         .copyright-card a:hover {
             color: #0056b3;
             text-decoration: underline;
         }
-
+        
         .copyright-links {
             margin-top: 15px;
             display: flex;
             justify-content: center;
             gap: 20px;
         }
+
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .left-column, .right-column {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                margin-left: 0;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .welcome-message {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .main-content {
+                padding: 10px;
+            }
+            
+            .copyright-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
     </style>
 </head>
-
 <body>
-    <?php include dirname(__DIR__,2).'/src/component/sidebar.php'; ?>
-
+    <?php echo file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/frontend/component/sidebar.html"); ?>
+    
     <div class="dashboard">
         <header class="header">
             <h1><i class="fas fa-shield-alt"></i> VPN 仪表盘</h1>
         </header>
-
+        
         <div class="welcome-message">
             <h2>欢迎回来！</h2>
             <p>您当前有 12 个在线隧道，总流量为 1.2 GB。</p>
-
+            
             <div class="subscription-card">
                 <h3><i class="fas fa-crown"></i> 我的订阅</h3>
                 <p>当前订阅：基础版</p>
@@ -361,7 +360,7 @@ if (!verifySession()) {
                 <button class="subscribe-button"><i class="fas fa-arrow-circle-up"></i> 一键订阅</button>
             </div>
         </div>
-
+        
         <main class="main-content">
             <div class="left-column">
                 <div class="card">
@@ -393,7 +392,7 @@ if (!verifySession()) {
                         </li>
                     </ul>
                 </div>
-
+                
                 <div class="card">
                     <h2><i class="fas fa-comment-dots"></i> 问题反馈</h2>
                     <ul>
@@ -424,29 +423,29 @@ if (!verifySession()) {
                     </ul>
                 </div>
             </div>
-
+            
             <div class="right-column">
                 <div class="card announcement-card">
                     <h2><i class="fas fa-bullhorn"></i> 系统公告</h2>
-
+                    
                     <div class="announcement-item">
                         <h3><i class="fas fa-exclamation-circle"></i> 系统维护通知</h3>
                         <p>为了提升服务质量，我们将在本周六凌晨2:00-4:00进行系统维护，期间服务可能短暂中断。</p>
                         <div class="date"><i class="far fa-clock"></i> 2023-11-15</div>
                     </div>
-
+                    
                     <div class="announcement-item">
                         <h3><i class="fas fa-star"></i> 新功能上线</h3>
                         <p>新增多设备同时连接功能，现在支持最多5台设备同时使用VPN服务。</p>
                         <div class="date"><i class="far fa-clock"></i> 2023-11-10</div>
                     </div>
-
+                    
                     <div class="announcement-item">
                         <h3><i class="fas fa-tag"></i> 双十一优惠活动</h3>
                         <p>双十一期间，所有套餐享受7折优惠，年付用户额外赠送1个月服务期。</p>
                         <div class="date"><i class="far fa-clock"></i> 2023-11-01</div>
                     </div>
-
+                    
                     <div class="announcement-item">
                         <h3><i class="fas fa-shield-alt"></i> 安全升级公告</h3>
                         <p>我们已升级加密协议至最新标准，建议所有用户更新客户端至最新版本。</p>
@@ -455,7 +454,7 @@ if (!verifySession()) {
                 </div>
             </div>
         </main>
-
+        
         <div class="footer">
             <div class="copyright-card">
                 <p>© 2023 VPN服务提供商 版权所有</p>
@@ -468,6 +467,24 @@ if (!verifySession()) {
             </div>
         </div>
     </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const dashboard = document.querySelector('.dashboard');
+        
+        if (sidebar && dashboard) {
+            sidebar.addEventListener('mouseenter', function() {
+                this.style.width = '250px';
+                dashboard.style.marginLeft = '250px';
+            });
+            
+            sidebar.addEventListener('mouseleave', function() {
+                this.style.width = '80px';
+                dashboard.style.marginLeft = '80px';
+            });
+        }
+    });
+    </script>
 </body>
-
 </html>

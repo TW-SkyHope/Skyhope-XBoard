@@ -190,6 +190,21 @@
             margin-right: 20px;
         }
 
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .verification-code {
+                flex-direction: column;
+            }
+            
+            .verification-code button {
+                width: 100%;
+            }
+            
+            .login-history {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 <script>
@@ -233,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <body>
-<?php include dirname(__DIR__,2).'/src/component/sidebar.php'; ?>
+<?php echo file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/frontend/component/sidebar.html"); ?>
     <!-- 主内容区 -->
     <div class="dashboard">
         <header class="header">

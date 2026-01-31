@@ -50,6 +50,7 @@
             justify-content: center;
             width: 100%;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .server-tabs {
@@ -79,6 +80,25 @@
 
         .server-tab:hover {
             background: rgba(0,123,255,0.05);
+        }
+
+        .server-search-container {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .server-search {
+            padding: 10px 15px;
+            border: 1px solid rgba(0,123,255,0.2);
+            border-radius: 6px;
+            width: 250px;
+        }
+
+        .server-search:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
         .server-grid {
@@ -198,10 +218,44 @@
             cursor: not-allowed;
             opacity: 0.7;
         }
+
+        @media (max-width: 768px) {
+            .server-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .server-tabs-wrapper {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .server-tabs {
+                width: 100%;
+                order: 1;
+            }
+            
+            .server-tab {
+                flex: 1;
+                text-align: center;
+                padding: 14px 10px;
+                margin: 0;
+            }
+            
+            .server-search-container {
+                position: static;
+                width: 100%;
+                order: 2;
+            }
+            
+            .server-search {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-<?php include dirname(__DIR__,2).'/src/component/sidebar.php'; ?>
+<?php echo file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/frontend/component/sidebar.html"); ?>
     
     <div class="dashboard">
         <header class="header">
@@ -216,6 +270,10 @@
                     <div class="server-tab">欧洲</div>
                     <div class="server-tab">美洲</div>
                     <div class="server-tab">收藏</div>
+                </div>
+                
+                <div class="server-search-container">
+                    <input type="text" class="server-search" placeholder="搜索服务器...">
                 </div>
             </div>
             
@@ -358,6 +416,18 @@
             dashboard.style.marginLeft = '80px';
         });
         
+        // 搜索功能
+        const searchInput = document.querySelector('.server-search');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const serverCards = document.querySelectorAll('.server-card');
+            
+            serverCards.forEach(card => {
+                const serverName = card.querySelector('.server-name span').textContent.toLowerCase();
+                card.style.display = serverName.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+        
         // 标签切换功能
         const tabs = document.querySelectorAll('.server-tab');
         tabs.forEach(tab => {
@@ -372,11 +442,15 @@
         
         function filterServersByRegion(region) {
             const serverCards = document.querySelectorAll('.server-card');
+            const searchTerm = document.querySelector('.server-search').value.toLowerCase();
             
             serverCards.forEach(card => {
                 const serverRegion = card.getAttribute('data-region');
+                const serverName = card.querySelector('.server-name span').textContent.toLowerCase();
                 
-                const show = region === '全部服务器' || serverRegion === region;
+                const show = (region === '全部服务器' || serverRegion === region) && 
+                             (searchTerm === '' || serverName.includes(searchTerm));
+                
                 card.style.display = show ? 'block' : 'none';
             });
         }

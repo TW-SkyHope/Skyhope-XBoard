@@ -359,10 +359,39 @@
         .plan-card-footer {
             text-align: center;
         }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .plan-tabs {
+                width: 100%;
+            }
+            
+            .plan-tab {
+                flex: 1;
+                text-align: center;
+                padding: 14px 10px;
+            }
+            
+            .plan-detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan-actions {
+                flex-direction: column;
+            }
+            
+            .plan-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan-card {
+                min-height: auto;
+            }
+        }
     </style>
 </head>
 <body>
-<?php include dirname(__DIR__,2).'/src/component/sidebar.php'; ?>
+<?php echo file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/frontend/component/sidebar.html"); ?>
     
     <div class="dashboard">
         <header class="header">

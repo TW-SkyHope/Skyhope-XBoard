@@ -20,6 +20,94 @@
             display: flex;
             flex-direction: column;
         }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 80px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            overflow-y: auto;
+            transition: width 0.3s;
+        }
+        
+        .sidebar-header {
+            padding: 25px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            height: 80px;
+        }
+        
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            position: absolute;
+            left: 60px;
+            white-space: nowrap;
+            transform: translateX(-20px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            min-width: 30px;
+            z-index: 2;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            padding: 18px 20px;
+            transition: background 0.3s;
+            height: 60px;
+        }
+        
+        .sidebar-menu li:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            height: 100%;
+            position: relative;
+        }
+        
+        .sidebar-menu li a i {
+            margin-right: 15px;
+            font-size: 1.5rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar-menu li a span {
+            transform: translateX(-20px);
+            opacity: 0;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
         /* 主内容区 */
         .dashboard {
             flex: 1;
@@ -180,24 +268,157 @@
             background: linear-gradient(135deg, #0062cc, #0056b3);
         }
         
+        /* 移动端适配 */
+        @media (max-width: 992px) {
+            .help-layout {
+                flex-direction: column;
+            }
+            
+            .help-right {
+                width: 100%;
+            }
+            
+            .download-section {
+                position: static;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            
+            .sidebar.active {
+                width: 250px;
+            }
+            
+            .dashboard {
+                margin-left: 0;
+            }
+            
+            .sidebar-header h2,
+            .sidebar-menu li a span {
+                opacity: 1 !important;
+                transform: translateX(0) !important;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .help-container {
+                padding: 10px;
+            }
+            
+            .documentation-section,
+            .download-section {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 18px;
+            }
+            
+            .documentation-title {
+                font-size: 16px;
+            }
+        }
+        
         /* 桌面端悬停效果 */
-        .sidebar:hover {
-            width: 250px;
+        @media (min-width: 769px) {
+            .sidebar:hover {
+                width: 250px;
+            }
+            
+            .sidebar:hover .sidebar-header h2,
+            .sidebar:hover .sidebar-menu li a span {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            
+            .sidebar:hover ~ .dashboard {
+                margin-left: 250px;
+            }
         }
         
-        .sidebar:hover .sidebar-header h2,
-        .sidebar:hover .sidebar-menu li a span {
-            transform: translateX(0);
-            opacity: 1;
+        /* 移动菜单按钮 */
+        .mobile-menu-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 99;
+            display: none;
         }
         
-        .sidebar:hover ~ .dashboard {
-            margin-left: 250px;
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
-    <?php include dirname(__DIR__,2).'/src/component/sidebar.php'; ?>
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>VPN管理</h2>
+            <button id="toggleSidebar"><i class="fas fa-bars"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/index">
+                    <i class="fas fa-home"></i>
+                    <span>仪表盘</span>
+                </a>
+            </li>
+            <li>
+                <a href="/package">
+                    <i class="fas fa-server"></i>
+                    <span>套餐</span>
+                </a>
+            </li>
+            <li>
+                <a href="/list">
+                    <i class="fas fa-cog"></i>
+                    <span>服务器列表</span>
+                </a>
+            </li>
+            <li>
+                <a href="/stats">
+                    <i class="fas fa-chart-line"></i>
+                    <span>统计</span>
+                </a>
+            </li>
+            <li>
+                <a href="/help">
+                    <i class="fas fa-question-circle"></i>
+                    <span>帮助</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
     <!-- 主内容区 -->
     <div class="dashboard">
         <header class="header">
@@ -343,17 +564,30 @@
         // 侧边栏交互
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggleSidebar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const dashboard = document.querySelector('.dashboard');
         
         // 桌面端悬停效果
-        sidebar.addEventListener('mouseenter', function() {
-            this.style.width = '250px';
-            dashboard.style.marginLeft = '250px';
+        if (window.innerWidth > 768) {
+            sidebar.addEventListener('mouseenter', function() {
+                this.style.width = '250px';
+                dashboard.style.marginLeft = '250px';
+            });
+            
+            sidebar.addEventListener('mouseleave', function() {
+                this.style.width = '80px';
+                dashboard.style.marginLeft = '80px';
+            });
+        }
+        
+        // 移动端菜单按钮
+        mobileMenuBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
         });
         
-        sidebar.addEventListener('mouseleave', function() {
-            this.style.width = '80px';
-            dashboard.style.marginLeft = '80px';
+        // 侧边栏切换按钮
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
         });
         
         // 窗口大小改变时调整布局

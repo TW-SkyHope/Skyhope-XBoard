@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <body>
-<?php include dirname(__DIR__,2).'/src/component/sidebar.php'; ?>
+<?php echo file_get_contents($_SERVER['DOCUMENT_ROOT'] . "/frontend/component/sidebar.html"); ?>
     <div class="dashboard">
         <header class="header">
             <h1><i class="fas fa-chart-bar"></i> VPN 数据统计</h1>

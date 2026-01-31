@@ -1,82 +1,124 @@
 <?php
-declare(strict_types=1);
+// 获取请求的URI
+$requestUri = $_SERVER['REQUEST_URI'];
 
-// 加载独立配置
-$cacheConfig = require __DIR__ . '/config/route_cache.php';
+// 去除查询字符串（如?foo=bar）
+$requestUri = strtok($requestUri, '?');
 
-// 路由缓存初始化
-if ($cacheConfig['enable_route_cache']) {
-    static $cachedRoutes = null;
-    static $cachedSettings = null;
-    
-    if ($cachedRoutes === null) {
-        $routeConfig = require __DIR__ . '/config/routes.php';
-        $cachedSettings = $routeConfig['settings'];
-        
-        // 预处理路由信息
-        $cachedRoutes = [];
-        foreach ($routeConfig['routes'] as $route => $config) {
-            $cachedRoutes[$route] = [
-                'view' => $config['view'],
-                'is_dynamic' => strpos($route, '{') !== false,
-                'pattern' => $route === '/' ? '/^\/$/' : '#^' . 
-                    str_replace(['\{[^}]+\}', '/'], ['([^/]+)', '\/'], $route) . '$#'
-            ];
-        }
-    }
-} else {
-    $routeConfig = require __DIR__ . '/config/routes.php';
-    $cachedSettings = $routeConfig['settings'];
-    $cachedRoutes = $routeConfig['routes'];
-}
-
-// 请求解析
-$requestUri = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
-$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-
-// 根路径重定向
 if ($requestUri === '/') {
-    header("Location: " . ($cacheConfig['default_redirect'] ?? $cachedSettings['default_redirect']));
+    header("Location: /index");
     exit;
 }
+// 定义路由表
+$routes = [
+    #替换
+    '/index' => 'mainpage',
+    '/login' => 'login',
+    '/list' => 'vpnlist',
+    '/stats' => 'vpntongji',
+    '/package' => 'vpnpackage',
+    '/help' => 'vpnhelp',
+    '/admin/index' => 'admin',
+    '/admin/user' => 'aduser',
+    '/admin/shop' => 'adshop',
+    '/install'=>'install',
+    '/zyb'=>'zyb',
+    '/src' => 'src' ,// 动态路由示例
+];
 
+// 匹配路由
 
+foreach ($routes as $route => $controller) {
+    // 将动态路由（如{id}）转换为正则表达式
+    $pattern = preg_replace('/\{[^}]+\}/', '([^/]+)', $route);
+    $pattern = "#^$pattern$#";
 
-// 路由匹配
-$matchedRoute = null;
-$matches = [];
-
-// 静态路由优先匹配
-if (isset($cachedRoutes[$requestUri])) {
-    $matchedRoute = $cachedRoutes[$requestUri];
-} 
-// 动态路由匹配
-else {
-    foreach ($cachedRoutes as $route => $config) {
-        if ($config['is_dynamic'] && preg_match($config['pattern'], $requestUri, $matches)) {
-            array_shift($matches);
-            $matchedRoute = $config;
-            break;
-        }
+    if (preg_match($pattern, $requestUri, $matches)) {
+        // 提取动态参数
+        array_shift($matches); // 移除完整匹配项
+        call_user_func_array($controller, $matches); // 调用控制器并传递参数
+        exit;
     }
 }
 
-// 处理匹配结果
-if ($matchedRoute) {
-    // 准备视图数据
-    $data = [
-        'params' => $matches,
-        'query' => $requestMethod === 'GET' ? $_GET : [],
-        'post' => $requestMethod === 'POST' ? $_POST : [],
-        'method' => $requestMethod
-    ];
-    
-    // 渲染视图
-    extract($data, EXTR_SKIP);
-    include $matchedRoute['view'];
-    exit;
+// 如果没有匹配的路由，返回404
+header("HTTP/1.0 404 Not Found");
+echo '404 - Page not found';
+
+// 示例控制器函数
+function mainpage() {
+    // 加载并输出 home.php 文件
+    renderView('Frontend/dashboard.php');
 }
 
-// 404处理
-http_response_code(404);
-exit('404 - Page not found');
+
+function install() {
+    // 加载并输出 home.php 文件
+    renderView('install/install.php');
+}
+
+function login() {
+    // 加载并输出 contact.php 文件
+    renderView('Frontend/login.php');
+}
+
+function zyb() {
+    // 加载并输出 contact.php 文件
+    renderView('zyb/index.php');
+}
+
+
+function vpnlist(){
+    renderView('Frontend/list.php');
+}
+
+function vpnpackage() {
+    // 加载并输出 home.php 文件
+    renderView('Frontend/package.php');
+}
+
+function vpntongji() {
+    // 加载并输出 home.php 文件
+    renderView('Frontend/stats.php');
+}
+
+function vpnhelp() {
+    // 加载并输出 home.php 文件
+    renderView('Frontend/help.php');
+}
+
+function admin() {
+    // 加载并输出 home.php 文件
+    renderView('admin/index.php');
+}
+
+function aduser() {
+    // 加载并输出 home.php 文件
+    renderView('admin/user.php');
+}
+
+function adshop() {
+    // 加载并输出 home.php 文件
+    renderView('admin/shop.php');
+}
+function src() {
+    // 加载并输出 home.php 文件
+    renderView('src/');
+}
+/**
+ * 渲染视图文件
+ * @param string $viewFile 视图文件名
+ * @param array $data 传递给视图的数据
+ */
+function renderView($viewFile, $data = []) {
+    // 提取数据为变量
+    extract($data);
+
+    // 加载视图文件
+    if (file_exists($viewFile)) {
+        include $viewFile;
+    } else {
+        echo "Error: View file '$viewFile' not found.";
+    }
+}
+?>
